@@ -1,0 +1,48 @@
+@use 'sass:map';
+
+$themes: (
+  'light': (
+    primary: #7cd219,
+    secondary: #26a69a,
+    accent: #9c27b0,
+
+    dark: #1d1d1d,
+    dark-page: #121212,
+
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+  ),
+  'orange': (
+    primary: #d29119,
+    secondary: #26a69a,
+    accent: #9c27b0,
+
+    dark: #1d1d1d,
+    dark-page: #121212,
+
+    positive: #21ba45,
+    negative: #c10015,
+    info: #31ccec,
+    warning: #f2c037,
+  ),
+);
+
+@each $theme, $colors in $themes {
+  [data-theme='#{$theme}'] {
+    @each $name, $color in $colors {
+      .bg-#{$name} {
+        background: $color !important;
+      }
+      .text-#{$name} {
+        color: $color !important;
+      }
+      .q-field__control,
+      .q-item--active,
+      .q-item.q-router-link--active {
+        color: map.get($colors, primary) !important;
+      }
+    }
+  }
+}

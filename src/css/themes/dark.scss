@@ -1,0 +1,24 @@
+// themes/dark.scss
+:root {
+  --q-primary: #bb86fc;
+  --q-secondary: #03dac6;
+  --q-accent: #3700b3;
+  --q-positive: #4caf50;
+  --q-negative: #f44336;
+  --q-info: #2196f3;
+  --q-warning: #ffc107;
+  --q-dark: #121212;
+  --q-dark-page: #121212;
+  --q-white: #fff; // Add white for dark theme legibility
+  --q-black: #fff; //'#black':  need to avoid this for dark theme
+  --q-grey-1: #f2f2f2;
+  --q-grey-2: #e6e6e6;
+  --q-grey-3: #d9d9d9;
+  --q-grey-4: #cccccc;
+  --q-grey-5: #bfbfbf;
+  --q-grey-6: #b3b3b3;
+  --q-grey-7: #a6a6a6;
+  --q-grey-8: #999999;
+  --q-grey-9: #8c8c8c;
+  --q-grey-10: #808080;
+}

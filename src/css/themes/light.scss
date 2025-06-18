@@ -1,0 +1,24 @@
+// themes/light.scss
+:root {
+  --q-primary: #1976d2;
+  --q-secondary: #26a69a;
+  --q-accent: #9c27b0;
+  --q-positive: #21ba45;
+  --q-negative: #c10015;
+  --q-info: #31ccec;
+  --q-warning: #f2c037;
+  --q-dark: #1d1d1d; // Important for dark mode text!
+  --q-dark-page: #ffffff; // Background for dark mode
+  --q-white: #000000; // Foreground for dark mode
+  --q-black: #ffffff;
+  --q-grey-1: #f2f2f2;
+  --q-grey-2: #e6e6e6;
+  --q-grey-3: #d9d9d9;
+  --q-grey-4: #cccccc;
+  --q-grey-5: #bfbfbf;
+  --q-grey-6: #b3b3b3;
+  --q-grey-7: #a6a6a6;
+  --q-grey-8: #999999;
+  --q-grey-9: #8c8c8c;
+  --q-grey-10: #808080;
+}
