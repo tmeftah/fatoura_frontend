@@ -62,7 +62,7 @@ export const useInvoicesStore = defineStore('invoices', () => {
     isPrinting.value = true
     try {
       const response = await api.post(
-        `/generate_invoice2/${id}`,
+        `/generate_invoice/${id}`,
         {},
         {
           responseType: 'blob', // Important!  Tells axios to expect a blob response.  Or 'arraybuffer' depending on your backend
