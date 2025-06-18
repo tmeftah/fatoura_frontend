@@ -6,7 +6,7 @@
 
         <q-toolbar-title> Fatoura </q-toolbar-title>
 
-        <div>V0.1</div>
+        <div><q-btn @click="handleLogout" color="white" text-color="black" label="Logout" /></div>
       </q-toolbar>
     </q-header>
 
@@ -41,6 +41,11 @@
 <script setup>
 import { ref, watch } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from 'stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
 
 const themeOptions = [
   { label: 'Light', value: 'light' },
@@ -82,5 +87,10 @@ const leftDrawerOpen = ref(false)
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function handleLogout() {
+  auth.logout() // Clears token + store + headers
+  router.push('/login') // Redirect back to login page
 }
 </script>
