@@ -23,6 +23,7 @@ export const useAuthStore = defineStore('auth', {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
         })
+        console.log(response)
         this.token = response.data.access_token
 
         localStorage.setItem('token', this.token)

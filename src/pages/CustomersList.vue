@@ -3,31 +3,28 @@
     <!-- Header Section -->
     <div class="page-header q-pa-lg">
       <div class="row items-center justify-between">
-        <div>
-          <h4 class="text-h4 text-weight-bold q-ma-none text-primary">Customer Management</h4>
-          <p class="text-subtitle1 text-grey-7 q-mb-none">Manage your customer database</p>
-        </div>
         <q-btn
           color="primary"
           label="Add Customer"
           icon="person_add"
-          size="lg"
+          size="md"
           unelevated
           @click="openAddCustomerDialog"
+          class="add-customer-btn"
         />
       </div>
     </div>
 
     <!-- Search Section -->
-    <div class="q-pa-lg">
+    <div class="q-pa-none q-mb-md">
       <q-card flat class="search-card">
-        <q-card-section class="q-pa-lg">
+        <q-card-section class="q-pa-md">
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-8">
               <q-input
                 v-model="search"
                 placeholder="Search customers by name, email, phone, or address..."
-                debounce="500"
+                debounce="400"
                 outlined
                 dense
                 class="search-input"
@@ -42,9 +39,9 @@
       </q-card>
     </div>
 
-    <!-- Customers Table -->
-    <div class="q-pa-lg">
-      <q-card flat class="customers-table-card">
+    <!-- Customers Table (Desktop) -->
+    <div class="q-pa-none customers-table-wrapper">
+      <q-card flat class="customers-table-card desktop-table">
         <q-table
           :rows="filteredCustomers"
           :columns="columns"
@@ -52,15 +49,17 @@
           flat
           :loading="isLoading"
           :rows-per-page-options="[10, 25, 50]"
+          :rows-per-page="10"
           class="professional-table"
+          style="border-radius: 12px"
         >
           <template v-slot:top>
             <div class="full-width row items-center q-pa-md">
               <q-icon name="people" size="md" color="primary" class="q-mr-md" />
-              <div class="text-h6 text-weight-medium">All Customers</div>
+              <div class="text-h6 text-weight-medium">Customers</div>
               <q-space />
               <div class="text-caption text-grey-6">
-                {{ filteredCustomers.length }} customer{{
+                {{ filteredCustomers.length }} Customer{{
                   filteredCustomers.length !== 1 ? 's' : ''
                 }}
               </div>
@@ -118,11 +117,85 @@
 
           <template v-slot:loading>
             <q-inner-loading :showing="isLoading">
-              <q-spinner-gears size="50px" color="primary" />
+              <q-spinner-gears size="40px" color="primary" />
             </q-inner-loading>
           </template>
         </q-table>
       </q-card>
+
+      <!-- Customers Cards (Mobile) -->
+      <div class="q-gutter-md mobile-table">
+        <q-card
+          v-for="row in filteredCustomers"
+          :key="row.id"
+          class="customer-mobile-card"
+          flat
+          bordered
+        >
+          <q-card-section class="q-pa-sm q-pb-xs">
+            <div class="row items-center justify-between no-wrap">
+              <div class="text-h6 text-primary text-weight-medium ellipsis">
+                {{ row.name }}
+              </div>
+              <div class="q-ml-xs text-caption text-grey-7">
+                <q-badge align="middle" color="grey-3" text-color="primary">
+                  {{ row.email || 'No Email' }}
+                </q-badge>
+              </div>
+            </div>
+            <div class="text-grey-8 q-mt-xs" v-if="row.address">
+              <q-icon name="location_on" size="xs" color="grey-7" class="q-mr-xs" />
+              <span class="ellipsis">{{ row.address }}</span>
+            </div>
+            <div v-if="row.phone" class="text-grey-7 text-caption q-mt-xs">
+              <q-icon name="phone" size="xs" color="grey-7" class="q-mr-xs" />
+              {{ row.phone }}
+            </div>
+          </q-card-section>
+          <q-card-actions align="right" class="q-pa-xs">
+            <q-btn
+              dense
+              flat
+              round
+              icon="visibility"
+              color="primary"
+              size="md"
+              @click="viewCustomer(row)"
+            >
+              <q-tooltip>View</q-tooltip>
+            </q-btn>
+            <q-btn
+              dense
+              flat
+              round
+              icon="edit"
+              color="secondary"
+              size="md"
+              @click="editCustomer(row)"
+            >
+              <q-tooltip>Edit</q-tooltip>
+            </q-btn>
+            <q-btn
+              dense
+              flat
+              round
+              icon="delete"
+              color="negative"
+              size="md"
+              @click="deleteCustomer(row)"
+            >
+              <q-tooltip>Delete</q-tooltip>
+            </q-btn>
+          </q-card-actions>
+        </q-card>
+        <div
+          v-if="filteredCustomers.length === 0 && !isLoading"
+          class="text-grey-6 text-center q-pt-xl"
+        >
+          <q-icon name="sentiment_dissatisfied" size="40px" />
+          <div class="q-mt-sm">No customers found.</div>
+        </div>
+      </div>
     </div>
 
     <!-- Add/Edit Customer Dialog -->
@@ -148,7 +221,7 @@
           </div>
         </q-card-section>
 
-        <q-card-section class="q-pa-xl">
+        <q-card-section>
           <div class="row justify-center">
             <div class="col-12 col-md-8 col-lg-6">
               <q-card flat bordered class="form-section">
@@ -159,33 +232,37 @@
                   </div>
 
                   <q-form ref="customerFormRef" @submit="saveCustomer">
-                    <div class="q-mt-lg">
+                    <div class="q-mt-md">
                       <q-input
                         v-model="customerForm.name"
                         label="Customer Name *"
                         outlined
-                        class="form-input q-mb-lg"
+                        class="form-input q-mb-md"
                         :rules="nameRules"
                         lazy-rules
+                        autofocus
+                        dense
                       />
                       <q-input
                         v-model="customerForm.email"
                         label="Email Address"
                         type="email"
                         outlined
-                        class="form-input q-mb-lg"
+                        class="form-input q-mb-md"
                         :rules="emailRules"
                         lazy-rules
+                        dense
                       />
                       <q-input
                         v-model="customerForm.phone"
                         label="Phone Number"
                         outlined
-                        class="form-input q-mb-lg"
+                        class="form-input q-mb-md"
                         :rules="phoneRules"
                         lazy-rules
                         mask="phone"
                         hint="Format: (123) 456-7890 or +1234567890"
+                        dense
                       />
                       <q-input
                         v-model="customerForm.address"
@@ -194,6 +271,7 @@
                         outlined
                         rows="3"
                         class="form-input"
+                        dense
                       />
                     </div>
                   </q-form>
@@ -203,13 +281,13 @@
           </div>
         </q-card-section>
 
-        <q-card-actions class="customer-form-actions q-pa-xl">
-          <q-btn flat label="Cancel" color="grey-7" size="lg" v-close-popup />
+        <q-card-actions class="customer-form-actions q-pa-md q-gutter-x-md">
+          <q-btn flat label="Cancel" color="grey-7" size="md" v-close-popup />
           <q-space />
           <q-btn
             color="primary"
             :label="editingCustomerId ? 'Update Customer' : 'Add Customer'"
-            size="lg"
+            size="md"
             unelevated
             @click="saveCustomer"
             :loading="isSaving"
@@ -234,7 +312,7 @@
           </div>
         </q-card-section>
 
-        <q-card-section class="q-pa-xl">
+        <q-card-section>
           <div class="row justify-center">
             <div class="col-12 col-md-8 col-lg-6">
               <!-- Customer Information -->
@@ -277,17 +355,17 @@
           </div>
         </q-card-section>
 
-        <q-card-actions class="q-pa-xl">
+        <q-card-actions class="q-pa-md">
           <q-space />
           <q-btn
             color="primary"
             label="Edit Customer"
             icon="edit"
             outline
-            size="lg"
+            size="md"
             @click="editCustomerFromView"
           />
-          <q-btn flat label="Close" color="grey-7" size="lg" v-close-popup />
+          <q-btn flat label="Close" color="grey-7" size="md" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -438,7 +516,6 @@ async function viewCustomer(customer) {
     viewedCustomer.value = await customersStore.fetchCustomer(customer.id)
     viewCustomerDialog.value = true
   } catch (error) {
-    console.log(error)
     $q.notify({
       color: 'red-5',
       textColor: 'white',
@@ -460,7 +537,6 @@ function editCustomerFromView() {
 }
 
 async function saveCustomer() {
-  // Validate form
   if (!customerForm.value.name || customerForm.value.name.trim().length < 2) {
     $q.notify({
       color: 'red-5',
@@ -496,8 +572,6 @@ async function saveCustomer() {
     })
     return
   }
-
-  // Save/add logic
   try {
     if (editingCustomerId.value) {
       await customersStore.updateCustomer(editingCustomerId.value, {
@@ -524,7 +598,6 @@ async function saveCustomer() {
     addCustomerDialog.value = false
     editingCustomerId.value = null
   } catch (error) {
-    console.log(error)
     $q.notify({
       color: 'red-5',
       textColor: 'white',
@@ -552,7 +625,6 @@ async function confirmDeleteCustomer() {
     customerToDelete.value = null
     deleteConfirmationDialog.value = false
   } catch (error) {
-    console.log(error)
     $q.notify({
       color: 'red-5',
       textColor: 'white',
@@ -565,28 +637,69 @@ async function confirmDeleteCustomer() {
 
 <style scoped>
 .customers-page {
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f8fafb 0%, #f1f6fe 100%);
   min-height: 100vh;
+}
+.customers-table-wrapper {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Show table on desktop, cards on mobile */
+.desktop-table {
+  display: block;
+}
+.mobile-table {
+  display: none;
+}
+
+/* Hide table and show cards for small screens */
+@media (max-width: 800px) {
+  .desktop-table {
+    display: none;
+  }
+  .mobile-table {
+    display: block;
+    margin: 0 0.5rem 2rem 0.5rem;
+  }
+}
+
+.customer-mobile-card {
+  border-radius: 10px;
+  box-shadow: 0 1px 6px #7c99c025;
+  background: #fff;
+  word-break: break-word;
 }
 
 .page-header {
-  /* Clean flat design without background */
+  padding-bottom: 0 !important;
+}
+
+.add-customer-btn {
+  font-weight: 500;
+  border-radius: 14px;
+  min-width: 140px;
 }
 
 .search-card {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 28px;
 }
 
 .customers-table-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-}
-
-.professional-table {
-  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 4vw;
 }
 
 .professional-table .q-table__top {
@@ -598,9 +711,9 @@ async function confirmDeleteCustomer() {
 }
 
 .form-section {
-  background: white;
+  background: #fbfbfe;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e9edfb;
 }
 
 .section-title {
@@ -609,75 +722,56 @@ async function confirmDeleteCustomer() {
   color: #37474f;
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .form-input {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .customer-form-actions {
-  background: #f5f5f5;
+  background: #f7faff;
   border-top: 1px solid #e0e0e0;
-}
-
-.customer-view-header {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.view-section {
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-}
-
-.customer-info {
-  space-y: 16px;
-}
-
-.info-item {
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.info-label {
-  font-size: 0.875rem;
-  color: #757575;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-}
-
-.info-value {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #212121;
-  word-break: break-word;
-}
-
-.delete-dialog {
-  min-width: 400px;
+  border-radius: 0 0 12px 12px;
 }
 
 .search-input {
-  max-width: 500px;
+  max-width: 440px;
+  width: 100%;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .q-pa-xl {
+@media (max-width: 900px) {
+  .customers-table-card,
+  .search-card {
+    max-width: 98vw;
+  }
+  .q-card-section {
     padding: 16px !important;
   }
-
+}
+@media (max-width: 600px) {
   .page-header {
     padding: 16px !important;
   }
-
+  .search-card,
+  .customers-table-card {
+    border-radius: 8px;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
   .section-title {
-    font-size: 1rem;
+    font-size: 1em;
+  }
+  .add-customer-btn {
+    min-width: 100px;
+    font-size: 0.91em;
+    padding: 0 10px;
+  }
+  .q-dialog .q-card {
+    border-radius: 10px !important;
+  }
+  .customer-mobile-card .text-h6 {
+    font-size: 1.05em;
   }
 }
 </style>

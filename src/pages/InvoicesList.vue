@@ -3,31 +3,28 @@
     <!-- Header Section -->
     <div class="page-header q-pa-lg">
       <div class="row items-center justify-between">
-        <div>
-          <h4 class="text-h4 text-weight-bold q-ma-none text-primary">Invoice Management</h4>
-          <p class="text-subtitle1 text-grey-7 q-mb-none">Manage your invoices and billing</p>
-        </div>
         <q-btn
           color="primary"
           label="Create Invoice"
-          icon="add"
-          size="lg"
+          icon="add_shopping_cart"
+          size="md"
           unelevated
+          class="create-invoice-btn"
           @click="openAddInvoiceDialog"
         />
       </div>
     </div>
 
     <!-- Search and Filters -->
-    <div class="q-pa-lg">
+    <div class="q-pa-none q-mb-md">
       <q-card flat class="search-card">
-        <q-card-section class="q-pa-lg">
+        <q-card-section class="q-pa-md">
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-8">
               <q-input
                 v-model="search"
                 placeholder="Search invoices by number, customer, or date..."
-                debounce="500"
+                debounce="400"
                 outlined
                 dense
                 class="search-input"
@@ -42,9 +39,9 @@
       </q-card>
     </div>
 
-    <!-- Invoice Table -->
-    <div class="q-pa-lg">
-      <q-card flat class="invoice-table-card">
+    <!-- Invoice Table (Desktop) -->
+    <div class="q-pa-none invoice-table-wrapper">
+      <q-card flat class="invoice-table-card desktop-table">
         <q-table
           :rows="filteredInvoices"
           :columns="columns"
@@ -52,15 +49,17 @@
           :loading="isLoading"
           flat
           :rows-per-page-options="[10, 25, 50]"
+          :rows-per-page="10"
           class="professional-table"
+          style="border-radius: 12px"
         >
           <template v-slot:top>
             <div class="full-width row items-center q-pa-md">
               <q-icon name="receipt_long" size="md" color="primary" class="q-mr-md" />
-              <div class="text-h6 text-weight-medium">All Invoices</div>
+              <div class="text-h6 text-weight-medium">Invoices</div>
               <q-space />
               <div class="text-caption text-grey-6">
-                {{ filteredInvoices.length }} invoice{{ filteredInvoices.length !== 1 ? 's' : '' }}
+                {{ filteredInvoices.length }} Invoice{{ filteredInvoices.length !== 1 ? 's' : '' }}
               </div>
             </div>
           </template>
@@ -118,6 +117,85 @@
           </template>
         </q-table>
       </q-card>
+
+      <!-- Invoice Cards (Mobile) -->
+      <div class="q-gutter-md mobile-table">
+        <q-card
+          v-for="row in filteredInvoices"
+          :key="row.id"
+          class="invoice-mobile-card"
+          flat
+          bordered
+        >
+          <q-card-section class="q-pa-sm">
+            <div class="row items-center justify-between no-wrap">
+              <div>
+                <div class="text-h6 text-primary text-weight-medium ellipsis">
+                  {{ row.invoice_number }}
+                </div>
+                <div class="text-grey-7 text-caption q-mt-xs">
+                  {{ row.customer.name }}
+                </div>
+              </div>
+              <div class="text-right text-caption q-ml-xs">
+                <div>
+                  <q-badge color="grey-3" text-color="primary" align="middle">
+                    {{ row.invoice_date }}
+                  </q-badge>
+                </div>
+                <div class="q-mt-xs">
+                  <q-badge color="grey-3" text-color="secondary" align="middle">
+                    Due: {{ row.due_date || 'N/A' }}
+                  </q-badge>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+
+          <q-card-actions align="right" class="q-pa-xs">
+            <q-btn
+              dense
+              flat
+              round
+              icon="visibility"
+              color="primary"
+              size="md"
+              @click="viewInvoice(row)"
+            >
+              <q-tooltip>View</q-tooltip>
+            </q-btn>
+            <q-btn
+              dense
+              flat
+              round
+              icon="edit"
+              color="secondary"
+              size="md"
+              @click="editInvoice(row)"
+            >
+              <q-tooltip>Edit</q-tooltip>
+            </q-btn>
+            <q-btn
+              dense
+              flat
+              round
+              icon="delete"
+              color="negative"
+              size="md"
+              @click="deleteInvoice(row)"
+            >
+              <q-tooltip>Delete</q-tooltip>
+            </q-btn>
+          </q-card-actions>
+        </q-card>
+        <div
+          v-if="filteredInvoices.length === 0 && !isLoading"
+          class="text-grey-6 text-center q-pt-xl"
+        >
+          <q-icon name="sentiment_dissatisfied" size="40px" />
+          <div class="q-mt-sm">No invoices found.</div>
+        </div>
+      </div>
     </div>
 
     <!-- Add/Edit Invoice Dialog -->
@@ -904,140 +982,103 @@ const ttcTotal = computed(() => {
 
 <style scoped>
 .invoice-page {
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f8fafb 0%, #f1f6fe 100%);
   min-height: 100vh;
+}
+.invoice-table-wrapper {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Show table on desktop, cards on mobile */
+.desktop-table {
+  display: block;
+}
+.mobile-table {
+  display: none;
+}
+
+/* Hide table and show cards for small screens */
+@media (max-width: 800px) {
+  .desktop-table {
+    display: none;
+  }
+  .mobile-table {
+    display: block;
+    margin: 0 0.5rem 2rem 0.5rem;
+  }
+}
+
+.invoice-mobile-card {
+  border-radius: 10px;
+  box-shadow: 0 1px 6px #7c99c025;
+  background: #fff;
+}
+
+.page-header {
+  padding-bottom: 0 !important;
+}
+
+.create-invoice-btn {
+  font-weight: 500;
+  border-radius: 14px;
+  min-width: 140px;
 }
 
 .search-card {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 28px;
 }
 
 .invoice-table-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-}
-
-.professional-table {
-  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 4vw;
 }
 
 .professional-table .q-table__top {
   border-bottom: 1px solid #e0e0e0;
 }
 
-.invoice-form-header {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-}
-
-.form-section {
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-}
-
-.section-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #37474f;
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.form-input {
-  margin-bottom: 8px;
-}
-
-.item-card {
-  background: #fafafa;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-}
-
-.invoice-form-actions {
-  background: #f5f5f5;
-  border-top: 1px solid #e0e0e0;
-}
-
-.invoice-view-header {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.view-section {
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-}
-
-.info-item {
-  margin-bottom: 16px;
-}
-
-.info-label {
-  font-size: 0.875rem;
-  color: #757575;
-  margin-bottom: 4px;
-}
-
-.info-value {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #212121;
-}
-
-.financial-summary {
-  space-y: 12px;
-}
-
-.summary-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.summary-label {
-  font-size: 0.875rem;
-  color: #757575;
-}
-
-.summary-value {
-  font-weight: 600;
-  color: #212121;
-}
-
-.notes-content {
-  background: #f9f9f9;
-  padding: 16px;
-  border-radius: 8px;
-  color: #424242;
-  line-height: 1.5;
-}
-
-.delete-dialog {
-  min-width: 400px;
-}
-
-.search-input {
-  max-width: 500px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .q-pa-xl {
+@media (max-width: 900px) {
+  .invoice-table-card,
+  .search-card {
+    max-width: 98vw;
+  }
+  .q-card-section {
     padding: 16px !important;
   }
-
+}
+@media (max-width: 600px) {
   .page-header {
     padding: 16px !important;
   }
-
-  .section-title {
-    font-size: 1rem;
+  .search-card,
+  .invoice-table-card {
+    border-radius: 8px;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+  .create-invoice-btn {
+    min-width: 100px;
+    font-size: 0.91em;
+    padding: 0 10px;
+  }
+  .q-dialog .q-card {
+    border-radius: 10px !important;
+  }
+  .invoice-mobile-card .text-h6 {
+    font-size: 1.05em;
   }
 }
 </style>
