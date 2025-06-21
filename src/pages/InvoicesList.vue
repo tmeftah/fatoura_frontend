@@ -297,7 +297,7 @@
                     >
                       <q-card flat bordered class="item-card">
                         <q-card-section class="q-pa-md">
-                          <div class="row q-col-gutter-md items-end">
+                          <div class="row q-col-gutter-md items-start">
                             <div class="col-12 col-sm-4">
                               <q-select
                                 v-model="item.product_id"
@@ -320,6 +320,8 @@
                                 label="Description"
                                 outlined
                                 dense
+                                type="textarea"
+                                autogrow
                               />
                             </div>
                             <div class="col-12 col-sm-2">
@@ -500,7 +502,7 @@
 
     <!-- View Invoice Dialog -->
     <q-dialog v-model="viewInvoiceDialog" maximized>
-      <q-card class="invoice-view-card">
+      <q-card square>
         <q-card-section class="invoice-view-header bg-grey-1">
           <div class="row items-center">
             <q-icon name="receipt_long" size="md" color="primary" class="q-mr-md" />
@@ -512,8 +514,19 @@
             <q-btn icon="close" flat round v-close-popup />
           </div>
         </q-card-section>
+        <q-card-actions class="q-pa-md">
+          <q-space />
+          <q-btn
+            color="primary"
+            label="Print Invoice"
+            icon="print"
+            outline
+            size="lg"
+            @click="printInvoice(viewedInvoice)"
+          />
+        </q-card-actions>
 
-        <q-card-section class="q-pa-xl">
+        <q-card-section class="q-pa-md">
           <div class="row q-col-gutter-xl">
             <div class="col-12 col-md-8">
               <!-- Invoice Information -->
@@ -565,13 +578,16 @@
                   >
                     <template v-slot:body-cell-name="props">
                       <q-td :props="props">
-                        <div class="text-weight-medium">
-                          {{ props.row.name }}
-                        </div>
+                        <div class="text-weight-medium">{{ props.row.name }}</div>
+                      </q-td>
+                    </template>
+                    <template v-slot:body-cell-description="props">
+                      <q-td :props="props">
+                        <q-input v-model="props.row.description" flat autogrow disable borderless />
                       </q-td>
                     </template>
                     <template v-slot:body-cell-unit_price="props">
-                      <q-td :props="props"> ${{ props.value }} </q-td>
+                      <q-td :props="props"> ${{ props.value }}</q-td>
                     </template>
                   </q-table>
                 </q-card-section>
@@ -582,7 +598,7 @@
               <q-card flat bordered class="view-section">
                 <q-card-section>
                   <div class="section-title q-mb-md">Financial Summary</div>
-                  <q-list bordered separator>
+                  <q-list separator>
                     <q-item>
                       <q-item-section v-if="viewedInvoice.discount_type === 'percent'"
                         >Discount ({{ viewedInvoice.discount_value }} %)
@@ -629,19 +645,6 @@
             </div>
           </div>
         </q-card-section>
-
-        <q-card-actions class="q-pa-xl">
-          <q-space />
-          <q-btn
-            color="primary"
-            label="Print Invoice"
-            icon="print"
-            outline
-            size="lg"
-            @click="printInvoice(viewedInvoice)"
-          />
-          <q-btn flat label="Close" color="grey-7" size="lg" v-close-popup />
-        </q-card-actions>
       </q-card>
     </q-dialog>
 
@@ -1074,9 +1077,7 @@ const ttcTotal = computed(() => {
     font-size: 0.91em;
     padding: 0 10px;
   }
-  .q-dialog .q-card {
-    border-radius: 10px !important;
-  }
+
   .invoice-mobile-card .text-h6 {
     font-size: 1.05em;
   }
