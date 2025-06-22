@@ -681,6 +681,7 @@ import { useQuasar } from 'quasar'
 import { useInvoicesStore } from 'stores/invoices'
 import { useProductsStore } from 'stores/products'
 import { useCustomersStore } from 'stores/customers'
+import { useSettingsStore } from 'stores/settings'
 
 const $q = useQuasar()
 
@@ -719,12 +720,22 @@ const invoiceToprint = ref(null)
 const invoicesStore = useInvoicesStore()
 const productsStore = useProductsStore()
 const customersStore = useCustomersStore()
+const settingsStore = useSettingsStore()
+
+const settings = computed(() => settingsStore.settings)
 
 onMounted(() => {
   invoicesStore.fetchInvoices()
   productsStore.fetchProducts()
   customersStore.fetchCustomers()
+  settingsStore.fetchSettings()
 })
+
+const getSettingValue = (key) => {
+  const setting = settings.value.find((setting) => setting.key === key)
+
+  return setting ? setting.value : undefined // Or return a default value like null or an empty string
+}
 
 const columns = [
   {
@@ -815,14 +826,14 @@ function getCustomerName(id) {
 
 function openAddInvoiceDialog() {
   editingInvoiceId.value = null
-
+  const timber = Number(getSettingValue('timbre_value'))
   invoiceForm.value = {
     invoice_number: generateInvoiceNumber(invoicesStore.invoices, new Date()),
     invoice_date: new Date().toISOString().split('T')[0],
     due_date: '',
     customer_id: null,
     notes: '',
-    timbre: 0,
+    timbre: timber,
     items: [],
     discount_type: 'percent',
     discount_value: 0,
@@ -843,7 +854,6 @@ async function viewInvoice(invoice) {
 }
 
 async function editInvoice(invoice) {
-  console.log('editInvoice')
   editingInvoiceId.value = invoice.id
   let data = await invoicesStore.fetchInvoice(invoice.id)
   invoiceForm.value = { ...data }
@@ -882,8 +892,6 @@ async function printInvoice(invoice) {
       const blob = new Blob([response.data], {
         type: 'application/pdf',
       }) // Adjust type as needed
-
-      console.log(blob)
 
       // Create a link element
       const link = document.createElement('a')
